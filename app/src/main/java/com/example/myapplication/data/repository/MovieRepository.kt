@@ -13,26 +13,36 @@ class MovieRepository(
 
     suspend fun refreshMovies() {
         try {
-            val movies = apiService.getMovies()
-            movies.forEach { movieDao.insertMovie(it) }
-        } catch (e: Exception) {
-            // Handle error
+            val remoteMovies = apiService.getMovies()
+            movieDao.clearAll()
+            remoteMovies.forEach { movieDao.insertMovie(it) }
+        } catch (_: Exception) {
+            // Si falla internet, la app sigue funcionando con Room
         }
     }
 
     suspend fun addMovie(movie: Movie) {
-        movieDao.insertMovie(movie)
-        // Optionally sync with remote
-        // apiService.createMovie(movie)
+        try {
+            val createdMovie = apiService.createMovie(movie.copy(id = 0))
+            movieDao.insertMovie(createdMovie)
+        } catch (_: Exception) {
+            movieDao.insertMovie(movie)
+        }
     }
 
     suspend fun updateMovie(movie: Movie) {
         movieDao.updateMovie(movie)
-        // apiService.updateMovie(movie.id, movie)
+        try {
+            apiService.updateMovie(movie.id, movie)
+        } catch (_: Exception) {
+        }
     }
 
     suspend fun deleteMovie(movie: Movie) {
         movieDao.deleteMovie(movie)
-        // apiService.deleteMovie(movie.id)
+        try {
+            apiService.deleteMovie(movie.id)
+        } catch (_: Exception) {
+        }
     }
 }
