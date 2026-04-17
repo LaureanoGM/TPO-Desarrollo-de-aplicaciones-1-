@@ -9,30 +9,52 @@ class MovieRepository(
     private val movieDao: MovieDao,
     private val apiService: ApiService
 ) {
+
     val allMovies: Flow<List<Movie>> = movieDao.getAllMovies()
+
+    suspend fun getMovieById(id: Int): Movie? {
+        return movieDao.getMovieById(id)
+    }
 
     suspend fun refreshMovies() {
         try {
-            val movies = apiService.getMovies()
-            movies.forEach { movieDao.insertMovie(it) }
+            val remoteMovies = apiService.getMovies()
+            movieDao.deleteAllMovies()
+            remoteMovies.forEach { movieDao.insertMovie(it) }
         } catch (e: Exception) {
-            // Handle error
+            e.printStackTrace()
         }
     }
 
     suspend fun addMovie(movie: Movie) {
-        movieDao.insertMovie(movie)
-        // Optionally sync with remote
-        // apiService.createMovie(movie)
+        try {
+            val createdMovie = apiService.createMovie(movie.copy(id = 0))
+            movieDao.insertMovie(createdMovie)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            movieDao.insertMovie(movie)
+        }
     }
 
     suspend fun updateMovie(movie: Movie) {
-        movieDao.updateMovie(movie)
-        // apiService.updateMovie(movie.id, movie)
+        try {
+            val updatedMovie = apiService.updateMovie(movie.id, movie)
+            movieDao.insertMovie(updatedMovie)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            movieDao.updateMovie(movie)
+        }
     }
 
     suspend fun deleteMovie(movie: Movie) {
-        movieDao.deleteMovie(movie)
-        // apiService.deleteMovie(movie.id)
+        try {
+            if (movie.id != 0) {
+                apiService.deleteMovie(movie.id)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            movieDao.deleteMovie(movie)
+        }
     }
 }

@@ -1,13 +1,9 @@
 package com.example.myapplication.data.remote
 
 import com.example.myapplication.model.Movie
-import com.example.myapplication.model.Product
 import retrofit2.http.*
 
 interface ApiService {
-    @GET("products")
-    suspend fun getProducts(): List<Product>
-
     @GET("movies")
     suspend fun getMovies(): List<Movie>
 

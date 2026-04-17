@@ -19,6 +19,7 @@ import com.example.myapplication.data.remote.ApiService
 import com.example.myapplication.data.repository.MovieRepository
 import com.example.myapplication.ui.navigation.Screen
 import com.example.myapplication.ui.screens.AboutScreen
+import com.example.myapplication.ui.screens.HomeScreen
 import com.example.myapplication.ui.screens.MovieAddEditScreen
 import com.example.myapplication.ui.screens.MovieListScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
@@ -56,8 +57,18 @@ class MainActivity : ComponentActivity() {
 
                     NavHost(
                         navController = navController,
-                        startDestination = Screen.MovieList.route
+                        startDestination = Screen.Home.route
                     ) {
+                        composable(Screen.Home.route) {
+                            HomeScreen(
+                                onNavigateToMovies = {
+                                    navController.navigate(Screen.MovieList.route)
+                                },
+                                onNavigateToAbout = {
+                                    navController.navigate(Screen.About.route)
+                                }
+                            )
+                        }
                         composable(Screen.MovieList.route) {
                             MovieListScreen(
                                 viewModel = movieViewModel,
@@ -69,6 +80,9 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onAbout = {
                                     navController.navigate(Screen.About.route)
+                                },
+                                onBack = {
+                                    navController.popBackStack()
                                 }
                             )
                         }
